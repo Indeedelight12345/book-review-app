@@ -1,0 +1,11 @@
+db_host: "mydb.abc123xyz.eu-west-2.rds.amazonaws.com"   # Or VM Private IP
+db_name: "book_review_db"
+db_user: "bookuser"
+db_pass: "bookpass"
+backend_port: 3004
+backend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+backend_dir: "/home/ubuntu/book-review-app/backend"
+
+
+allowed_origins:
+  - "http://<frontend-public-ip>"

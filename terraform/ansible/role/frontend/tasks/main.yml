@@ -1,0 +1,40 @@
+---
+- name: Install Node.js 18.x (LTS)
+  shell: curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  args:
+    warn: false
+
+- name: Install Node and build tools
+  apt:
+    name:
+      - nodejs
+      - build-essential
+    state: present
+    update_cache: yes
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+
+- name: Clone frontend repository
+  git:
+    repo: "{{ frontend_repo_url }}"
+    dest: "{{ frontend_dir }}"
+    version: main
+
+- name: Create frontend .env.local file
+  copy:
+    dest: "{{ frontend_dir }}/.env.local"
+    content: |
+      NEXT_PUBLIC_API_URL={{ backend_api_url }}
+
+- name: Install dependencies
+  command: npm install
+  args:
+    chdir: "{{ frontend_dir }}"
+
+- name: Start frontend with PM2
+  command: pm2 start npm --name "frontend-app" -- run dev
+  args:
+    chdir: "{{ frontend_dir }}"

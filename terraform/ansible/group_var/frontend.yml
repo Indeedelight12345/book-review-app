@@ -1,0 +1,3 @@
+frontend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+frontend_dir: "/home/ubuntu/book-review-app/frontend"
+backend_api_url: "http://<backend-public-ip>:3004"
