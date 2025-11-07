@@ -1,0 +1,34 @@
+- name: Install Node.js and npm
+  apt:
+    name:
+      - nodejs
+      - npm
+    state: present
+
+- name: Clone frontend code
+  git:
+    repo: https://github.com/pravinmishraaws/book-review-app.git
+    dest: /opt/book-review-app
+    version: main
+
+- name: Install frontend dependencies
+  npm:
+    path: /opt/book-review-app/frontend
+
+- name: Create .env.local for Next.js
+  copy:
+    dest: /opt/book-review-app/frontend/.env.local
+    content: |
+      NEXT_PUBLIC_API_BASE_URL=http://{{ hostvars[groups['backend'][0]]['ansible_host'] }}:{{ backend_port }}
+
+- name: Build Next.js app
+  npm:
+    path: /opt/book-review-app/frontend
+    args: run build
+
+- name: Start frontend with PM2
+  command: pm2 start npm --name "book-frontend" -- start
+  args:
+    chdir: /opt/book-review-app/frontend
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/bin:/usr/local/bin"

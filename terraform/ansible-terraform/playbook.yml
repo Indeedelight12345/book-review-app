@@ -1,0 +1,26 @@
+---
+- name: Deploy Book Review App (RDS Backend)
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+- name: Configure Backend with RDS
+  hosts: backend
+  become: yes
+  vars:
+    rds_endpoint: "mydb.xxxxxx.us-east-1.rds.amazonaws.com"   
+    db_name: "bookreview_db"
+    db_user: "admin"
+    db_pass: "rootPassword123"                      
+  roles:
+    - backend
+
+- name: Configure Frontend
+  hosts: frontend
+  become: yes
+  roles:
+    - frontend

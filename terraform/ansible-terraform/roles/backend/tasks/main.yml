@@ -1,0 +1,36 @@
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install npm and PM2
+  apt:
+    name: npm
+    state: present
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+
+- name: Clone app repo
+  git:
+    repo: https://github.com/pravinmishraaws/book-review-app.git
+    dest: /opt/book-review-app
+    version: main
+
+- name: Install backend dependencies
+  npm:
+    path: /opt/book-review-app/backend
+
+- name: Create .env file for backend
+  template:
+    src: .env.j2
+    dest: /opt/book-review-app/backend/.env
+
+- name: Start backend with PM2
+  command: pm2 start server.js --name "book-backend"
+  args:
+    chdir: /opt/book-review-app/backend
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/bin:/usr/local/bin"
