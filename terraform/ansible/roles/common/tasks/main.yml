@@ -1,0 +1,27 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install base packages
+  apt:
+    name:
+      - git
+      - curl
+      - nginx
+    state: present
+
+
+- name: Add NodeSource setup script (Node.js 20)
+  shell: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+
+- name: Install Node.js (this includes npm)
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+    state: present

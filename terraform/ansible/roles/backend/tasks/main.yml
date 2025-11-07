@@ -1,0 +1,103 @@
+---
+- name: Install required base packages
+  apt:
+    name:
+      - git
+      - curl
+      - build-essential
+      - mysql-client
+    state: present
+    update_cache: yes
+
+- name: Add Node.js 18 setup script
+  shell: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+  args:
+    warn: false
+
+- name: Install Node.js 18
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install PM2
+  npm:
+    name: pm2
+    global: yes
+    state: present
+
+- name: Ensure project folder exists
+  file:
+    path: "/home/ubuntu/book-review-app"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Mark project directory as safe for Git
+  shell: git config --global --add safe.directory /home/ubuntu/book-review-app
+  become: yes
+  become_user: ubuntu
+
+- name: Clone backend repository
+  git:
+    repo: "{{ backend_repo_url }}"
+    dest: "/home/ubuntu/book-review-app"
+    version: main
+    force: yes
+    update: yes
+  become: yes
+  become_user: ubuntu
+
+
+- name: Verify actual backend source directory exists
+  stat:
+    path: "/home/ubuntu/book-review-app/backend"
+  register: backend_src
+
+- name: Fail if backend folder is missing
+  fail:
+    msg: "Backend folder not found at /home/ubuntu/book-review-app/backend - check repo structure"
+  when: not backend_src.stat.exists
+
+
+- name: Create backend environment file
+  copy:
+    dest: "/home/ubuntu/book-review-app/backend/.env"
+    content: |
+      PORT={{ backend_port }}
+      DB_HOST={{ db_host }}
+      DB_NAME={{ db_name }}
+      DB_USER={{ db_user }}
+      DB_PASS={{ db_pass }}
+      DB_DIALECT=mysql
+      DB_PORT=3306
+      JWT_SECRET={{ jwt_secret }}
+      ALLOWED_ORIGINS={{ allowed_origins }}
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+
+- name: Install backend dependencies
+  shell: npm install
+  args:
+    chdir: "/home/ubuntu/book-review-app/backend"
+  become: yes
+  become_user: ubuntu
+
+
+- name: Start backend with PM2
+  shell: pm2 start npm --name "backend-app" -- run start
+  args:
+    chdir: "/home/ubuntu/book-review-app/backend"
+  become: yes
+  become_user: ubuntu
+
+- name: Enable PM2 startup persistence
+  shell: pm2 startup systemd -u ubuntu --hp /home/ubuntu
+  become: yes
+
+- name: Save PM2 process list
+  shell: pm2 save
+  become: yes
+  become_user: ubuntu

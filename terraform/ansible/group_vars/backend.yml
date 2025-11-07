@@ -1,0 +1,11 @@
+db_host: "terraform-20251106182724488500000002.cybcmy3q9kpg.us-east-1.rds.amazonaws.com"
+db_name: "book_review_db"
+db_user: "admin"
+backend_port: 3004
+backend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+backend_dir: "/home/ubuntu/book-review-app/"
+db_pass: "rootPassword123"
+jwt_secret: "myVerySecretJWTKey123"
+allowed_origins: "http://98.92.172.83:3000"
+db_dialect: "mysql"
+db_port: 3306
